@@ -8,7 +8,7 @@ before_script:
 
 build:
   only:
-    - develop
+    - master
   before_script:
     - docker login registry.gitlab.com -u ${CI_REGISTRY_USER} -p ${CI_REGISTRY_PASSWORD}
   script:
