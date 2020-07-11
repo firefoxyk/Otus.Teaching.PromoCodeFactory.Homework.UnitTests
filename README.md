@@ -8,3 +8,5 @@ Cистема `Promocode Factory` для выдачи промокодов па�
 Подробное описание проекта можно найти в [Wiki](https://gitlab.com/devgrav/otus.teaching.promocodefactory/-/wikis/Home)
 
 Описание домашнего задания в [Homework Wiki](https://gitlab.com/devgrav/otus.teaching.promocodefactory/-/wikis/Homework-4)
+
+Для запуска проекта с базой данных Postgress нужно использовать `docker-compose up promocode-factory-db` из корня проекта, в `Startup` файле проекта `WebHost` должна быть установлена настройка `UseNpgsql`
