@@ -49,7 +49,7 @@ namespace Otus.Teaching.PromoCodeFactory.WebHost.Controllers
 
             return Ok(response);
         }
-        
+
         [HttpGet("{id}/limits/{limitId}")]
         public async Task<ActionResult<PartnerPromoCodeLimit>> GetPartnerLimitAsync(Guid id, Guid limitId)
         {
@@ -57,7 +57,7 @@ namespace Otus.Teaching.PromoCodeFactory.WebHost.Controllers
 
             if (partner == null)
                 return NotFound();
-            
+
             var limit = partner.PartnerLimits
                 .FirstOrDefault(x => x.Id == limitId);
 
@@ -70,40 +70,41 @@ namespace Otus.Teaching.PromoCodeFactory.WebHost.Controllers
                 EndDate = limit.EndDate.ToString("dd.MM.yyyy hh:mm:ss"),
                 CancelDate = limit.CancelDate?.ToString("dd.MM.yyyy hh:mm:ss"),
             };
-            
+
             return Ok(response);
         }
-        
+
         [HttpPost("{id}/limits")]
-        public async Task<IActionResult> SetPartnerPromoCodeLimitAsync(Guid id, SetPartnerPromoCodeLimitRequest request)
+        public async Task<IActionResult>
+            SetPartnerPromoCodeLimitAsync(Guid id, SetPartnerPromoCodeLimitRequest request)
         {
             var partner = await _partnersRepository.GetByIdAsync(id);
 
             if (partner == null)
                 return NotFound();
-            
+
             //Если партнер заблокирован, то нужно выдать исключение
             if (!partner.IsActive)
                 return BadRequest("Данный партнер не активен");
-            
+
             //Установка лимита партнеру
-            var activeLimit = partner.PartnerLimits.FirstOrDefault(x => 
+            var activeLimit = partner.PartnerLimits.FirstOrDefault(x =>
                 !x.CancelDate.HasValue);
-            
-            if (activeLimit != null)
+
+            if (activeLimit != null && DateTime.Now < request.EndDate)
             {
                 //Если партнеру выставляется лимит, то мы 
                 //должны обнулить количество промокодов, которые партнер выдал, если лимит закончился, 
                 //то количество не обнуляется
                 partner.NumberIssuedPromoCodes = 0;
-                
+
                 //При установке лимита нужно отключить предыдущий лимит
                 activeLimit.CancelDate = DateTime.Now;
             }
 
             if (request.Limit <= 0)
                 return BadRequest("Лимит должен быть больше 0");
-            
+
             var newLimit = new PartnerPromoCodeLimit()
             {
                 Limit = request.Limit,
@@ -112,30 +113,31 @@ namespace Otus.Teaching.PromoCodeFactory.WebHost.Controllers
                 CreateDate = DateTime.Now,
                 EndDate = request.EndDate
             };
-            
+
             partner.PartnerLimits.Add(newLimit);
 
             await _partnersRepository.UpdateAsync(partner);
-            
-            return CreatedAtAction(nameof(GetPartnerLimitAsync), new {id = partner.Id, limitId = newLimit.Id}, null);
+
+            return CreatedAtAction(nameof(GetPartnerLimitAsync), new { id = partner.Id, limitId = newLimit.Id }, null);
         }
-        
+
+
         [HttpPost("{id}/canceledLimits")]
         public async Task<IActionResult> CancelPartnerPromoCodeLimitAsync(Guid id)
         {
             var partner = await _partnersRepository.GetByIdAsync(id);
-            
+
             if (partner == null)
                 return NotFound();
-            
+
             //Если партнер заблокирован, то нужно выдать исключение
             if (!partner.IsActive)
                 return BadRequest("Данный партнер не активен");
-            
+
             //Отключение лимита
-            var activeLimit = partner.PartnerLimits.FirstOrDefault(x => 
+            var activeLimit = partner.PartnerLimits.FirstOrDefault(x =>
                 !x.CancelDate.HasValue);
-            
+
             if (activeLimit != null)
             {
                 activeLimit.CancelDate = DateTime.Now;

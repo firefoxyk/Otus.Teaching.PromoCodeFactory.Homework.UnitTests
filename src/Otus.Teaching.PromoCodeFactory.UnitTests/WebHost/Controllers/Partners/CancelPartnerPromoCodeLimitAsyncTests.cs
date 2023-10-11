@@ -45,24 +45,24 @@ namespace Otus.Teaching.PromoCodeFactory.UnitTests.WebHost.Controllers.Partners
 
             return partner;
         }
-        
+
         [Fact]
         public async void CancelPartnerPromoCodeLimitAsync_PartnerIsNotFound_ReturnsNotFound()
         {
             // Arrange
             var partnerId = Guid.Parse("def47943-7aaf-44a1-ae21-05aa4948b165");
             Partner partner = null;
-            
+
             _partnersRepositoryMock.Setup(repo => repo.GetByIdAsync(partnerId))
                 .ReturnsAsync(partner);
 
             // Act
             var result = await _partnersController.CancelPartnerPromoCodeLimitAsync(partnerId);
- 
+
             // Assert
             result.Should().BeAssignableTo<NotFoundResult>();
         }
-        
+
         [Fact]
         public async void CancelPartnerPromoCodeLimitAsync_PartnerIsNotActive_ReturnsBadRequest()
         {
@@ -70,13 +70,13 @@ namespace Otus.Teaching.PromoCodeFactory.UnitTests.WebHost.Controllers.Partners
             var partnerId = Guid.Parse("def47943-7aaf-44a1-ae21-05aa4948b165");
             var partner = CreateBasePartner();
             partner.IsActive = false;
-            
+
             _partnersRepositoryMock.Setup(repo => repo.GetByIdAsync(partnerId))
                 .ReturnsAsync(partner);
 
             // Act
             var result = await _partnersController.CancelPartnerPromoCodeLimitAsync(partnerId);
- 
+
             // Assert
             result.Should().BeAssignableTo<BadRequestObjectResult>();
         }
