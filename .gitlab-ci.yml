@@ -1,21 +1,32 @@
-image: docker:stable
+image: mcr.microsoft.com/dotnet/sdk:latest
 
-services:
-  - docker:dind
+stages:
+  - "build"
+  - "test"
 
-before_script:
-  - docker info
+variables:
+  test: "Example.Test"
+
+before_script:  
+  - "ls"
+  - "apt-get update"
+  - "apt-get install -y apt-transport-https"
+  - "wget -q https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb"
+  - "dpkg -i packages-microsoft-prod.deb"
+  - "apt-get update"
+  - "apt-get install -y dotnet-sdk-6.0"
+  - "cd src"
+  - "dotnet restore"
 
 build:
-  only:
-    - master
-  before_script:
-    - docker login registry.gitlab.com -u ${CI_REGISTRY_USER} -p ${CI_REGISTRY_PASSWORD}
-  script:
-    - docker build -t ${CI_REGISTRY}/${CI_PROJECT_PATH}:latest src
-    - docker push ${CI_REGISTRY}/${CI_PROJECT_PATH}:latest
-  after_script:
-    - docker logout ${CI_REGISTRY}
   stage: build
-  tags: 
-    - docker
+  script:
+    - "ls"
+    - "dotnet build"
+
+
+test:
+  stage: test
+  script: 
+    - "ls"   
+    - "dotnet test"
